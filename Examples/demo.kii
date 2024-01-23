@@ -1,0 +1,616 @@
+//// Welcome to kii_script v0.1.0!
+
+// The goal of this file is to have everything you'd possibly need to know
+// about kii_script as well as a concrete target for me. Once this file can be
+// successfully run, then I know I'm done with the language's interpreter and
+// later compiler!
+
+/// Comments
+
+// To start off comments follow a reverse #Header styling. // represents the
+// smallest comment while additional /'s infer higher significance, when the
+// documentation creator is up and running, it'll make all the difference.
+
+//~
+	Multiline comments can be started using the spread operator `~`, and
+	closed on the other side when finished, this allows for inline comments
+	which would look something like /~ inline comment! ~/!
+~//
+
+// There are some interpreter/compiler enforced stylings which we'll get
+// into, but the most important ones are that kii_script prefers tabs for
+// indentation, and for tabs to take up 4 spaces. In addition, line widths
+// are generally discouraged from extending beyond 80 character. When
+// possible when dealing with a list of items, each item should be on an
+// individual line. Future notes on formatting will be prefixed with FORMAT:
+
+/// Data-Oriented Design
+
+// From the perspective of DOD, computing can be boiled down to two things;
+// storing data and performing actions on the data. For instance, the
+// argument can be made that the monitor you're viewing this is nothing but a
+// large array holding the color of every single pixel, and that all your GPU
+// is doing is manipulating that 'data' to show you different things. The goal
+// of kii_script is to make these two processes, manipulate and store data as
+// simple and painless as possible, and with that preamble out of the way,
+// let's look at some actual code!
+
+/// Assignment
+{
+	// We can signal that it's time to store some data with the `set` command
+	// followed by the name we want to give the data.
+	set data_name
+	
+	// With that, we've signaled that we want to create some data called
+	// `data_name` but we haven't said what we want it to be. To *copy* a value
+	// over to it, we can use the `=` operator.
+	= 0
+	
+	// but if we left things as they currently are, the language would have no
+	// way of knowing that we're done with the assignment. This is where the
+	// `;` punctuation comes in. This signals that we're done with the current
+	// statement.
+	;
+	
+	// Now this is very spread out, but we can condense this to a single line
+	set more_data = 1;
+	
+	// Now at any point if we say `data_name` or `more_data`, we'll substitute
+	// their values so for instance:
+	set is_1 = more_data;
+	// Here we've taken the `1` that's at `more_data` and copied it over to 
+	// `is_1`, but it'd be boring if that's all we can do, so let's move on to
+	// some more operators!
+}
+/// Operators
+{
+	// Operators, like `=`, and keywords, like `set`, make up the second part
+	// of DOD, which is the manipulation of data. More specifically, a lone
+	// `=` will alway signal that we're copying the data that is on the right to
+	// whatever is on the left. `set` says that we're creating some named data.
+
+	// Some operators are multiple characters, but for now we'll look at some
+	// operators you might already be familar with!
+
+	// Arithmetic
+	set is_12  = 9 + 3; // Addition
+	set is_6   = 9 - 3; // Subtraction
+	set is_27  = 9 * 3; // Multiplication
+	set is_3   = 9 / 3; // Division
+	set is_729 = 9 ^ 3; // Exponentiation
+	set is_0   = 9 % 3; // Modulus
+
+	// So far we've been looking at numbers, but we also have the ability to
+	// create data that is a boolean value. We can use special reserved words
+	// called literals to do this.
+
+	set truth = true;
+	set false = false;
+
+	// Funfact: The numbers we've be using are also literals, that's why your
+	// text editor (someday) shows them as the same color as the numbers! They
+	// don't represent anything, they should be read literally, hence literal!
+
+	// Comparison
+	set false_1 = 9 <  3; // Less than
+	set truth_1 = 9 >  3; // Greater than
+	set false_2 = 9 <= 3; // Less than or equal to
+	set truth_2 = 9 >= 3; // Greater than or equal to
+	set false_3 = 9 == 3; // Is equal to
+
+	// Logic
+	set false_4 = true & false; // And
+	set truth_3 = true | false; // Or
+	set false_5 = !truth_3;     // Not
+
+}
+/// Mutability
+{
+	// With some more operators under our belt, we can revisit assignment!
+	
+	// First up though we need to talk about mutable/immutable data. To start,
+	// by default, all data created in kii_script is immutable, this means that
+	// we can't change it's value, once it's set, it's set. To change values we
+	// need to signal that what we're making is mutable. We do this by prefixing
+	// the name with an `_`, so for instance
+	set  constant = 0;
+	set _variable = 1;
+
+	// Now while we can't change 'constant' or the program will throw an error,
+	// bringing it to a premature end, we can play around with `_variable`!
+	_variable = false;
+	_variable = 2;
+
+	// We can also call its current value to do things like incrementation
+	_variable = _variable + 2; // 4
+	_variable = _variable - 2; // 2
+
+	// Programmers over the years have found it quite tedious to have to retype
+	// the name of the variable twice when doing these sorts of operations, so
+	// a shorthand developed in which the assignment operator is placed in front
+	// of the actual operation, making the second declaration redundant, and
+	// kii_script supports this shorthand
+
+	// _variable = _variable +  1;
+	//           ^------------v
+	// _variable   _variable += 1;
+	// 	           xxxxxxxxx
+	// _variable             += 1;
+
+	_variable += 1; // 3
+	_variable -= 1; // 2
+	_variable /= 2; // 1
+	_variable *= 2; // 2
+}
+/// Referencing
+{
+	// Sometimes copying values isn't good enough, especially with mutable
+	// values in the mix, what if it changes over time? Let's look at an 
+	// example of this. Let's say I go to my bank and ask how much money I
+	// currently have in my balance.
+	set _bank_account   = 100;
+	set _balance_memory = _bank_account;
+
+	// Right now we're in sync, but what happens when if I forgot a recurring
+	// subscription somewhere?
+	set streaming_service_cost = 15;
+	_bank_account -= streaming_service_cost;
+
+	// Right now my `_bank_account` will be at 85, but my `_balance_memory`
+	// copied the value instead of referencing it, meaning that it's still at
+	// 100.
+
+	// Luckily I have a `banking_app` that keeps a reference of my 
+	// `_bank_account`. We can set that up by instead of copying a value with
+	// the `=` operator, we can use the `@` operator to say we're trying to 
+	// reference a value @ a location instead of just copying it.
+	set banking_app @ _bank_account; // 85
+
+	// Now let's say I do some shopping
+	set grocery_bill = 50;
+	_bank_account   -= grocery_bill; // 35
+	// And subtract the bill from my running memory
+	_balance_memory -= grocery_bill; // 50
+
+	// If I later find something else I want, any assumption I make using my
+	// own `_balance_memory` will be false and can lead to issues.
+	set item_cost = 40;
+	set incorrect_assumption = item_cost < _balance_memory; // true
+	set correct_assumption   = item_cost < banking_app;     // false
+
+	// Since `banking_app` points to what's at `_bank_account`, any changes
+	// are reflected immediately. We can also make changes to the source using
+	// the reference. For instance, let's say this `banking_app` has a feature
+	// where I can deposit checks from anywhere.
+	set check_amount = 100;
+	banking_app += check_amount;
+	// Now I'd have 135 in my bank account because banking_app is just a
+	// reference to `_bank_account` so it passed the 100 to it.
+}
+/// Typing
+{
+	// Now is a good time to talk about types. While at the end of the day
+	// all data on your computer is 1's and 0's which are stand-ins for on
+	// and off. 
+	// There are so many ways to interpret them. For instance, let's
+	// say someone asked you check 4 boxes in a row and write 1 if the box
+	// contained something, and 0 if it was empty, you might end up with a
+	// list that looks like this [1010]. 
+	// Now we know this is a representation
+	// of the contents of the boxes, but we don't know which side of the row
+	// you were looking at when you wrote them down! This issue of not knowing
+	// end is which, the 'endianness' of your list if you will, means that
+	// we need some sort of identifier.
+	// kii_script is no different, it will
+	// make it's best guess as to how the data should be read, but that takes
+	// time to do, which ultimately affects performance! We can help speed up
+	// the process we can help speed things up by being explict and *defining*
+	// how the data should be read. We call this process of telling a computer
+	// what type of data it's looking at, well, typing!
+	
+	// We *define* a value by adding a `:` which always means we're defining
+	// something in kii_script. Let's look at an example!
+	set unsigned_integer: #uint = 3;
+	// Here we set an `unsigned_integer` defined as a `#uint` before copying
+	// 3 to it.
+
+	// Below are a list of most of the primitive types you'll use often! 
+	set another_uint:   #uint =  3;     // usize in other languages
+	set signed_integer: #sint = -3;     // isize in other languages
+	set boolean_value:  #bool = true;   // boolean
+	set a_character:    #char = `a`;    // A single character
+
+	// We also type our references so we know what it should accept!
+	set uint_ref: #@uint @ another_uint;
+	set sint_ref: #@sint @ signed_integer;
+	set bool_ref: #@bool @ boolean_value;
+	set char_ref: #@char @ a_character;
+
+	// Don't worry too much about them if you don't get them yet, kii_script
+	// goes out of its way to make it possible to avoid typing as long as
+	// possible, and this is the last we'll mention it for a while. The most
+	// important takeaway is that the same data can be interpreted differently
+
+	// FORMAT: All primitive types must be prefixed with a lowercase letter
+}
+/// Complex types
+{
+	// Sometimes primitive types aren't enough, we might want to group related
+	// data together for both our, and the computer's sake! To do that, we use
+	// `[` to signal what's coming next is a list of things.
+	set Array = [ 1
+	// but we want to store more than one thing, so we use `,` to signal that
+	// there's more stuff coming
+	, 2, 3, 4, 5
+	// Now we just need to close things off and end the assignment
+	];
+
+	// All together now!
+	set Condensed = [ 1, 2, 3, 4, 5 ];
+
+	// FORMAT: All complex types must be prefixed with a capital letter
+	
+	// Now this is great and all, but this would be kinda useless if we
+	// didn't also have a way to get the things we stored back out, we
+	// can do that by `<>` as well as the index we want to get back
+	set _is_1 = Array<0>;
+	set _is_2 = Array<1>;
+	set _is_3 = Array<2>;
+	set _is_4 = Array<3>;
+	set _is_5 = Array<4>;
+
+	// This is a bit tedius though, so we can use the `,` punctuation to make
+	// our lives a little easier.
+	set is_1, is_2, is_3, is_4, is_5 = Array<0, 1, 2, 3, 4>;
+
+	// But kii_script's idea is to make manipulating data painless, so we can
+	// go even further! Using my favorite operator ever, the `~` or 'worm'
+	// operator, we can signal we're doing the values from 0 to 4
+	_is_1, _is_2, _is_3, _is_4, _is_5 = Array<0~4>;
+
+	// If no value is given to either side of the worm operator, it will
+	// continue until it reaches the end of the data, for instance
+	_is_3, _is_4, _is_5 = Array<2~>;
+	
+	// By default, the worm is inclusive, but if we want to bar it from
+	// a value we can use `|` which in tandem with '~' acts as a wall
+	_is_4, _is_5 = Array<2|~>;
+
+	// The worm also plays well with others 
+	_is_1, _is_4, _is_5, _is_2 = <0, 2|~, 1>;
+	
+	// As you might have guessed, we can get the entire Array with just
+	_is_1, _is_2, _is_3, _is_4, _is_5 = Array<~>;
+
+	// If we want, we can even go backwards!
+	_is_5, _is_4, _is_3 = Array<4~2>
+
+	// Ultimately it's the goal of kii_script to get out of your way and let
+	// you access the data in whatever works best for you! To that extent
+	// let's look at text, or strings as they're know in programming!
+}
+/// Strings
+{
+	// At their core, strings are just an array of characters, for instance
+	set Handwritten_Greeting = [`H`, `e`, `l`, `l`, `o`, `!`];
+	// is a string in most languages.
+
+	// However most languages have a bit of syntactic 'sugar' which allows
+	// users to declare a string without having to use that method, and
+	// kii_script is no exception, we can just write what we want.
+	set Easier_Greeting = `Hello, World!`;	
+
+	// Just keep in mind that under the hood, you're looking an Array so
+	set is_true = Handwritten_Greeting<~> == Easier_Greeting<0~4, 12>;
+
+	// While there's a lot more to strings, this is an adequate introduction
+	// for now until much later!
+}
+/// Labelled Complex Types
+{
+	// Sometimes it makes sense to lable certain data, for instance, we could
+	// create something like this.
+	set Person = [ `John`, 72 ];
+
+	// However accessing information about them can be a bit unituitive, for 
+	// instance we'd have to use `Person<0>` to get their name, but what does
+	// 72 mean? It could be their age or height in inches. Given convention we
+	// can probably safely assume it's age, but let's say you wanted to be
+	// their height, we can use the same conventions we've been using so far
+	// to declare fields in a complex type
+	set Jim = [
+		set name   = `Jimothy`,
+		set height = 63
+	];
+
+	// set is implied so we can drop it
+	set Sam = [
+		name   = `Samantha`,
+		height = 68
+	]
+
+	// Now because these are ordered we can still can use all the operations
+	// possible with other non-labeled tables.
+	set _is_63 = Jim<1>;
+	set _is_68 = Sam<0|~>;
+
+	// But we also have a few more tricks to get the value now
+	_is_63 = Jim.height;    // Dot notation, popular option
+	_is_63 = Jim<`height`>; // We can feed the string name in
+	set label = `height`;
+	_is_63 = Jim<label>;    // Or a variable that has the string
+
+	// Keep in mind that the mutability rules still apply, if we wanted
+	// someone to have the ability to grow, that'd need to be prefixed
+	set Child = [ name = `Andy`, _height = 40 ];
+	Child._height += 4;
+	set is_44 = Child<`_height`>;
+}
+/// Typing Complex Types
+{
+	// Sometimes we want data to conform to a specific structure, this means
+	// that we not only always know what we're expecting to get, but the
+	// computer itself can perform various tricks to speed up performance. To
+	// that extent, we can *define* our own types. To start we prefix our new
+	// type with # to indicate it's a type
+	set #Static_Person
+	// we then need to define what it is
+	:
+	// And since it's a complex type, we once again start with # along with
+	// the [ to signal there's stuff to come
+	#[
+	// Now let's create a field called name
+	name
+	// We define as #@Text. Don't worry about the type for now, it'll be
+	// explained in a bit!
+	: #@Text
+	// Now we'll signal we're onto the next one
+	,
+	// And put it in
+	age: #uint, height: #uint
+	// Finally we close things off
+	];
+
+	// With that we've greated a person, but they can't be altered in anyway,
+	// they're static, so here's one that can change as time goes on!
+	set #Person: #[
+		_name:   #@Text,
+		_age:    #uint,
+		_height: #uint
+	];
+
+	// Now we can use out freshly created type to create a person!
+	set Alex: #Person = [ `Alexathon`, 16, 60 ];
+	
+	// While we can define the fields individually, thanks to the type the
+	// computer already knows the labels for all the fields!
+	set is_16 = Alex._age;
+
+	// We can also take advantage of the fact that typing things tells the
+	// computer a bunch of information already so that
+	set Big_Array: #[ 0~99: #uint ] = 0;
+	// To walk through this word by word, we're saying `set` a `Big_Array`
+	// which can be defined as a `:` a type of complex structure `#[]` who's
+	// indexes 0 through 99 `0~99` can be defined as `:` a #uint and then
+	// copy `=` the value `0` into all of them.
+
+	// We can also quickly generate nested arrays
+	set Row_64: #[ 0~|64: #uint ] = 0;
+	set Grid_64x64: #[ 0~|64: #[ 0~|64: #uint ] ] = Row;
+}
+/// Manipulating Complex types
+{
+	// Sometimes we want to manipulate the Complex type itself and not just
+	// the values it contains. For instance, let's look at the following
+	set _Array = [ 0 ];
+
+	// For now, an Array with a single value doesn't make too much sense but
+	// we can always change it later, to merge two arrays together we use the
+	// worm operator `~`. Below is a visualization of how it works.
+	_Array = [ 0, 1 ] ~ [ 2, 3 ];
+	//       [ 0, 1 ]~,~[ 2, 3 ];
+	//       [ 0, 1 ~ , ~ 2, 3 ];
+	//       [ 0, 1   ,   2, 3,];
+
+	// We can also stick things on an array after the fact
+	_Array = _Array ~ [ 4, 5 ];
+
+	// But you might recognize this pattern from earlier so to make life easier.
+	_Array ~= [6, 7];
+
+	// These rules work with labeled complex types as well
+	set _Mary = [ name = `Marydelyn`, age = 32 ];
+	set Contact_Info = [ phone = "123-456-7890", address = "123 Main St"];
+	_Mary ~= Contact_Info;
+
+	set is_true = _Mary<3> == `123 Main St`;
+	set Anonymous_Data = _Mary<age~address>;
+}
+
+
+/// TODO: Everything beyond here was yoinked from an old .txt file, redo required!
+/// Blocks
+{
+	// Blocks are defined using `{}` and signal that everything inside of
+	// the closures are to be isolated from the rest of the code, or in
+	// other words, that they have their own Scope! Once a scope ends,
+	// everything inside is deallocated automatically so no GC is required!
+}
+/// Scope
+{
+	let outer_number = 0
+	{
+		let outer_number = 1;
+		print(outer_number);        // 1
+	}
+	print(outer_number);            // 0
+}
+/// Imports
+{
+	// We can use `()` to signal we're importing to the next scope
+	( outer_number ) {
+		let import = outer_number;
+		print(import);              // 0
+	}
+	// We can also set up declarations in the import section
+	( let import = outer_number ) {
+		print(import);              // 0
+	}
+	// `,` is used to separate multiple imports
+	let second_number = 2;
+	( outer_number, second_number ) {
+		print(outer_number);        // 0
+		print(second_number);       // 2
+	}
+	// Rules regarding assignment also apply here for multiple imports
+	( let a = outer_number, let b = 1, let c = second_number ) {
+		print(a);                   // 0
+		print(b);                   // 1
+		print(c);                   // 2
+	}
+	// When a variable is used in a scope without being defined, the
+	// compiler/interpeter will step through the scope to find it.
+	{
+		print(outer_number);       // 0
+	}
+	// When implicitly importing, keep in mind the current stack!
+	{
+		let outer_number = 1;
+		{
+			print(outer_number)    // 1
+		}
+	}
+	/// Exports
+	// Blocks can also `return` values from within, but they must be
+	// caught by an assignment of some sort
+	let _retrieved_value = { 
+		return 3; 
+	};
+	print(_retrieved_value); // 3
+	// Returns will traverse up as many scopes as requires until they
+	// find a place to be assigned
+	_retrieved_value = {
+		{
+			return 4;
+		}
+	}
+	print(_retrieved_value); // 4
+	// Return halts further execution of all scopes it traverses up
+	_retrieved_value = {
+		{
+			return 5;
+		}
+		return 6;
+	}
+	print(_retrieved_value); // 5
+	// We can avoid this behavior by returning void;
+	_retrieved_value = {
+		{
+			return void;
+			return 5;        // The first return closed the scope
+		}
+		return 6;            // void doesn't bubble so this is run
+	}
+	print(_retrieved_value); // 6
+	// `void` is implict when no return value is given
+	{
+		return;
+	}
+	// Values can also be implicitly returned by omitting a `;`
+	_retrieved_value = { 3 };
+	// This can be used to set up order of operations
+	_retrieved_value = { 1 + 2 } * 2; // 6
+	/// Functions
+	// We can define variables as code blocks, this allows for
+	// later execution, for instance:
+	let outputs_three: { return 3 };
+	// Blocks are not run on definition, and must be called later
+	// using the `run` keyword
+	_retrieved_value = run outputs_three;
+	// We can also define generic imports to be called later
+	let add: ( a, b ) { return a + b; }
+	_retrieved_value = run add (1, 2);
+	// Since `run` is implied by the following `()` we can exclude it
+	_retrieved_value = add(2, 3);
+	// Finally, even if there isn't an import, we can invoke the run
+	// with empty `()`
+	_retrieved_value = add(outputs_three(), 1);
+	print(_retrieved_value); // 4
+	// By default, imports follow the order they were originally
+	// created, however they can also be defined if needed
+	let sub: ( a, b ) { return a - b };
+	_retrieved_value = sub(1,3);
+	print(_retrieved_value); // -3
+	_retrieved_value = sub(b = 1, a = 3);
+	print(_retrieved_value); // 2
+	/// Conditional execution
+	// For times in which we don't want to execute certain code, we
+	// can simply guard the block with `?`, for instance:
+	true ? {
+		print(`I will print because the previous value was true`);
+	}
+	false ? {
+		print(`I will never be run!`);
+	}
+	// There are no `else` conditions in the language, we can `match`
+	// a particular value when
+	match (12) {
+		0, 1 ? { print(`Won't be run.`) }
+		2~11 ? { print(`Won't be run.`) }
+		12   ? { print(`Will be run!!`) }
+		~    ? { print(`Matches must be exhaustive.`) }
+	}
+	/// Defer
+	// We can also `defer` execution until the end of the scope
+	_retrieved_value = {
+		let _number = 0;
+		defer { _number * 2 }
+		_number += 1;
+		return _number;
+	}
+	print(_retrieved_value); // 2
+	// defer follows a FILO model
+	_retrieved_value = {
+		let _number = 1;
+		defer { _number * 2 };
+		defer { _number + 1 };
+		return _number;
+	}
+	print(_retrieved_number); // 4
+	/// Loops
+	let _index = 0;
+	let _sum   = 0;
+	for {
+		_index > 5 ? { break; }
+		defer { _index += 1; }
+		_sum += _index;
+	}
+	print(_sum); // 15;
+	_index, _sum = 0;
+	for _index <= 5 ? {
+		defer { _index += 1; }
+		_sum += _index;
+	}
+	_sum = 0;
+	for (index = 0~5) {
+		_sum += index;
+	}
+	for (index = 0~5) {
+		index == 3 ? { continue; }
+		_sum += index;
+	}
+	let Array = [ 0, 1, 2, 3, 4, 5 ];
+	for (index = 0 ~ len(Array)-1 ) {
+		sum  += Array[index];
+	}
+	for (field = Array[~]) {
+		_sum += field;
+	}
+	outer: for (x = 0~9) {
+		inner: for (y = 0~9) {
+			_sum = x * 10 + y;
+			x, y == 3, 4 ? { break outer; }
+		}
+	}
+	print(_sum) // 34
+}
