@@ -523,12 +523,12 @@
 	/// Functions
 	// We can define variables as code blocks, this allows for
 	// later execution, for instance:
-	set outputs_three: { return 3 };
+	set outputs_three -> { return 3 };
 	// Blocks are not run on definition, and must be called later
 	// using the `run` keyword
 	_retrieved_value = run outputs_three;
 	// We can also define generic imports to be called later
-	set add: ( a, b ) { return a + b; }
+	set add -> ( a, b ) { return a + b; }
 	_retrieved_value = run add (1, 2);
 	// Since `run` is implied by the following `()` we can exclude it
 	_retrieved_value = add(2, 3);
@@ -638,10 +638,17 @@
 	// of how far along it is.
 	value = await handler;
 
-	// The instant the handler loses scope, (or is deleted) the child thread is
-	// ended so for instance we can end the execution early like this
-	set early_exit = start slow_function(100_000);
-	del early_exit; // In a perfect world, we wouldn't see a single print
+	// The handler Table also has a few fields we can use to check in on
+	// for instance:
+
+	// If it's still executing
+	set is_running = handler.running; // false
+	// If the value has be retrieved by await
+	set is_done    = handler.done;    // true
+	// If there was an error on a system level
+	set has_failed = handler.failed;  // false
+	// If it does fail due to hardware/os, this will be where the error is
+	set error      = handler.error;   // #Error.None
 }
 /// Generics
 {
@@ -650,7 +657,7 @@
 	set Generic_A: #Generic_Type(#uint) = [ in_use = true,  value = 42 ];
 	set Generic_B: #Generic_Type        = [ in_use = false, value: #bool = false ];
 	set number: #sint = -30;
-	set Generic_C: #Generic_Type = [true, number];
+	set Generic_C: #Generic_Type = [true, number]; // Inferred as #sint
 
 	set #Multiple(a, b): [ in_use: #bool, value_one: a, value_two: b ];
 
@@ -659,6 +666,12 @@
 	set #Nested(type): [ in_use: #bool, value: #Generic_Type(type) ];
 
 	set Example: #Nested = [ true, [ false, #uint: 42 ] ];
+
+	// We can also use generics in function
+	set generic_function: #Generic_Type(type) -> ( value: type ) {
+		return [ true, value ];
+	}
+	set generic_value: #Generic_Type(#uint) = generic_function(42);
 }
 /// Unions
 {
@@ -697,7 +710,7 @@
     set #Some(type): [ Error: #Error | Valid: type ];
 
     set can_fail: #Some(#uint) -> ( condition: #bool ) {
-        condition ? { return Error.Not_Found; }
+        condition ? { return #Error.Not_Found; }
         return 42;
     }
 
