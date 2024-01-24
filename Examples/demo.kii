@@ -438,9 +438,9 @@
 }
 /// Scope
 {
-	let outer_number = 0
+	set outer_number = 0
 	{
-		let outer_number = 1;
+		set outer_number = 1;
 		print(outer_number);        // 1
 	}
 	print(outer_number);            // 0
@@ -449,21 +449,21 @@
 {
 	// We can use `()` to signal we're importing to the next scope
 	( outer_number ) {
-		let import = outer_number;
+		set import = outer_number;
 		print(import);              // 0
 	}
 	// We can also set up declarations in the import section
-	( let import = outer_number ) {
+	( set import = outer_number ) {
 		print(import);              // 0
 	}
 	// `,` is used to separate multiple imports
-	let second_number = 2;
+	set second_number = 2;
 	( outer_number, second_number ) {
 		print(outer_number);        // 0
 		print(second_number);       // 2
 	}
 	// Rules regarding assignment also apply here for multiple imports
-	( let a = outer_number, let b = 1, let c = second_number ) {
+	( set a = outer_number, set b = 1, set c = second_number ) {
 		print(a);                   // 0
 		print(b);                   // 1
 		print(c);                   // 2
@@ -475,7 +475,7 @@
 	}
 	// When implicitly importing, keep in mind the current stack!
 	{
-		let outer_number = 1;
+		set outer_number = 1;
 		{
 			print(outer_number)    // 1
 		}
@@ -483,7 +483,7 @@
 	/// Exports
 	// Blocks can also `return` values from within, but they must be
 	// caught by an assignment of some sort
-	let _retrieved_value = { 
+	set _retrieved_value = { 
 		return 3; 
 	};
 	print(_retrieved_value); // 3
@@ -523,12 +523,12 @@
 	/// Functions
 	// We can define variables as code blocks, this allows for
 	// later execution, for instance:
-	let outputs_three: { return 3 };
+	set outputs_three: { return 3 };
 	// Blocks are not run on definition, and must be called later
 	// using the `run` keyword
 	_retrieved_value = run outputs_three;
 	// We can also define generic imports to be called later
-	let add: ( a, b ) { return a + b; }
+	set add: ( a, b ) { return a + b; }
 	_retrieved_value = run add (1, 2);
 	// Since `run` is implied by the following `()` we can exclude it
 	_retrieved_value = add(2, 3);
@@ -538,7 +538,7 @@
 	print(_retrieved_value); // 4
 	// By default, imports follow the order they were originally
 	// created, however they can also be defined if needed
-	let sub: ( a, b ) { return a - b };
+	set sub: ( a, b ) { return a - b };
 	_retrieved_value = sub(1,3);
 	print(_retrieved_value); // -3
 	_retrieved_value = sub(b = 1, a = 3);
@@ -563,7 +563,7 @@
 	/// Defer
 	// We can also `defer` execution until the end of the scope
 	_retrieved_value = {
-		let _number = 0;
+		set _number = 0;
 		defer { _number * 2 }
 		_number += 1;
 		return _number;
@@ -571,15 +571,15 @@
 	print(_retrieved_value); // 2
 	// defer follows a FILO model
 	_retrieved_value = {
-		let _number = 1;
+		set _number = 1;
 		defer { _number * 2 };
 		defer { _number + 1 };
 		return _number;
 	}
 	print(_retrieved_number); // 4
 	/// Loops
-	let _index = 0;
-	let _sum   = 0;
+	set _index = 0;
+	set _sum   = 0;
 	for {
 		_index > 5 ? { break; }
 		defer { _index += 1; }
@@ -599,7 +599,7 @@
 		index == 3 ? { continue; }
 		_sum += index;
 	}
-	let Array = [ 0, 1, 2, 3, 4, 5 ];
+	set Array = [ 0, 1, 2, 3, 4, 5 ];
 	for (index = 0 ~ len(Array)-1 ) {
 		sum  += Array[index];
 	}
@@ -613,4 +613,96 @@
 		}
 	}
 	print(_sum) // 34
+}
+/// Start/Await (asynchronous operation)
+{
+	set slow_function: ( steps: #uint ) {
+		for (step = 1~steps) {
+			STD.Time.sleep(10);
+			print(`On loop: ${step});
+		}
+		return 1;
+	}
+
+	// Starts slow_function but doesn't wait for the return value yet;
+	set handler = start slow_function(10)
+
+	print(`This should run first`);
+	Kii.Time.sleep(25);
+	print(`This should appear between loops 2 and 3`);
+
+	// Keep in mind this isn't guaranteed thanks to how the Operating
+	// system actually runs these things.
+
+	// If we don't await the result, then the thread will be ended, regardless
+	// of how far along it is.
+	value = await handler;
+
+	// The instant the handler loses scope, (or is deleted) the child thread is
+	// ended so for instance we can end the execution early like this
+	set early_exit = start slow_function(100_000);
+	del early_exit; // In a perfect world, we wouldn't see a single print
+}
+/// Generics
+{
+	set #Generic_Type(some_type): [ in_use: #bool, value: some_type ];
+
+	set Generic_A: #Generic_Type(#uint) = [ in_use = true,  value = 42 ];
+	set Generic_B: #Generic_Type        = [ in_use = false, value: #bool = false ];
+	set number: #sint = -30;
+	set Generic_C: #Generic_Type = [true, number];
+
+	set #Multiple(a, b): [ in_use: #bool, value_one: a, value_two: b ];
+
+	set Complex_Thing: #Multiple = [ true, #bool: false, #uint: 42 ];
+
+	set #Nested(type): [ in_use: #bool, value: #Generic_Type(type) ];
+
+	set Example: #Nested = [ true, [ false, #uint: 42 ] ];
+}
+/// Unions
+{
+    set #Union: [ number: #uint | boolean: #bool ];
+
+    set Result: #Union.number = 42;
+
+    _ = match (Result) {
+        number < 1 ?     { print(`This number's too low!`); return 0; }
+        number     ? (n) { print(`The number is ${n}!`);    return 1; }
+        boolean    ? (b) { b ? {`It's true!`; return 2};    return 3; }
+        ~          ?     { print(`Match is exhaustive!`);   return 4; }
+    }
+}
+/// Enums
+{
+    set #Number: [
+        hundred  : #uint =       100 |
+        thousand : #uint =     1_000 |
+        million  : #uint = 1_000_000
+    ];
+
+    set #Direction: [ left | right | up | down ];
+
+    set Option: #Direction.left;
+
+    match (Option) {
+        left  ? { print(`We'll go left!`);  }
+        right ? { print(`We'll go right!`); }
+        ~     ? { print(`We can only go left or right!`); }
+    }
+}
+/// Optionals
+{
+    set #Error: [ Not_Found | Overflow ];
+    set #Some(type): [ Error: #Error | Valid: type ];
+
+    set can_fail: #Some(#uint) -> ( condition: #bool ) {
+        condition ? { return Error.Not_Found; }
+        return 42;
+    }
+
+    match ( can_fail(false) ) {
+        Error ?     { print(`We failed!`); }
+		Valid ? (n) { print(`We succeed with value ${n} returned!)}
+    }
 }
