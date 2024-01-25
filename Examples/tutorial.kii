@@ -719,3 +719,19 @@
 		Valid ? (n) { print(`We succeed with value ${n} returned!)}
     }
 }
+/// Debugging
+{
+	set _number = 0;
+	track _number;
+	_number += 1;
+	_number = 10;
+	_number = add(_number, 1);
+
+	set Log = trace _number; 	
+	print(Log); // Trace:	On line 6:2  tracking started _number == 0;
+	            //         	On line 7:10 _number is 1  (self addition)
+				//         	On line 8:2  _number is 10 (assignment)
+				//         	On line 9:16  _number was passed into function `add`
+				//          	- `add` is defined on line 1:1
+				//          On line 9:2  _number now equals 11 (assignment)
+}

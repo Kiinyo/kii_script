@@ -1,0 +1,268 @@
+/// Assignment
+{
+    /// Creation
+
+    // `set` is the keyword to declare a variable
+        set constant = 1;           // This value cannot be changed
+        set _mutable = 2;           // Mutable values are prefixed with a `_`
+        set copy     = _mutable;    // This copies the value of `_mutable`
+
+    /// Mutation
+
+    // To change the value of a variable, no keyword is needed
+        _mutable = 3;
+        // constant = 4;            // Error: `constant`'s value has been set!
+        // Note: `copy`'s value is still 2
+
+    /// Removal
+
+    // `del` is the keyword to remove a variable
+        del constant;
+        // set a = constant;        // Error: `constant` is not defined!
+
+    /// Referencing
+
+    // `=` is the 'copy' operator, to reference a value use `->` instead
+        set &pointer -> _mutable;   // Pointers are prefixed with a `&`
+        _mutable = 4;               // This changes the value at `&pointer` to 4
+        &pointer = 5;               // This changes the value of `_mutable` to 5
+
+    /// Borrow checking
+        // del _mutable;            // Error: Cannot delete a borrowed value!
+        del &pointer;
+        del _mutable;               // This is fine, since `&pointer` is deleted
+}
+/// Primitive types
+{
+    // Types are inferred but can be explicitly declared and are sized to the
+    // hardware register by default. Must have a lowercase name.
+        set unsigned_integer: #uint =  1;
+        set signed_integer:   #sint = -1;
+        set floating_point:   #real =  1.0;
+        set boolean:          #bool =  true;
+        set character:        #char = `1`;
+
+    // Types can be explicitly sized, but is not advised since most modern
+    // hardware has 64-bit registers and it'll just get padded anyway. These
+    // are best used for when processing data from some external source.
+        set byte: #u8 = 1;
+
+    // See the Documentation for a full list of types.
+}
+/// Literals
+{
+    // Integers
+        set is_1 = 1;       // Decimal
+        set is_2 = 0b10;    // Binary
+        set is_3 = 0o3;     // Octal
+        set is_4 = 0x4;     // Hexadecimal
+    // Floating point
+        set is_5 = 5.0;     // Decimal
+        set is_6 = 6.0e0;   // Scientific notation
+    // Characters
+        set letter  = `a`;          // Single character
+        set return  = `\n`;         // Escape sequence
+        set unicode = `\u{1F511}`;  // 🔑
+    // Boolean
+        set is_true  = true;
+        set is_false = false;
+    // Language constructs
+        set rnd_num: #uint = undefined; // This can be any value
+}
+/// Operators
+{
+    // Arithmetic must be whitespace separated
+        set is_12  = 9 + 3;         // Addition
+        set is_6   = 9 - 3;         // Subtraction
+        set is_27  = 9 * 3;         // Multiplication
+        set is_3   = 9 / 3;         // Division
+        set is_729 = 9 ^ 3;         // Exponentiation
+        set is_0   = 9 % 3;         // Modulus
+    // Self assignment
+        set _value = 9;
+        _value    += 3;             // Addition         (12)
+        _value    -= 3;             // Subtraction      (9)
+        _value    *= 3;             // Multiplication   (27)
+        _value    /= 3;             // Division         (9)
+        _value    ^= 3;             // Exponentiation   (729)
+        _value    %= 3;             // Modulus          (0)
+    // Comparison
+        set _is_false = 9 == 3;     // Equal to
+        set _is_true  = 9 != 3;     // Not equal to
+            _is_true  = 9 >  3;     // Greater than
+            _is_true  = 9 >= 3;     // Greater than or equal to
+            _is_false = 9 <  3;     // Less than
+            _is_false = 9 <= 3;     // Less than or equal to
+    // Logical
+            _is_false = true & false;   // And
+            _is_true  = true | false;   // Or
+            _is_true  =      ! false;   // Not
+}
+/// Complex Types (Tables)
+{
+    /// Named fields
+    set Table = [
+        set constant_field  = 1,
+        set _mutable_field  = 2
+    ];
+    Table._mutable_field    = 3;    // Dot notation can be used to access fields
+    Table[1]                = 4;    // Tables are ordered and can be indexed into
+    Table[`_mutable_field`] = 5;    // Fields can be accessed by string literals
+
+    /// Anonymous fields
+    set Array = [ 1, 2, 3, 4, 5 ];
+    Array[0] = 4;                   // Anonymous fields are mutable by default
+
+    /// Nested
+    set Nested = [
+        Table = [
+            constant_field  = 1,    // Set is implied and can be omitted
+            _mutable_field  = 2
+        ],
+        Array = [ 1, 2, 3, 4, 5 ]
+    ];
+    Nested.Table._mutable_field = 3;
+    Nested.Array[0]             = 4;
+
+    /// Mismatched
+    set Mismatched = [
+        named_field = 1,
+        2,
+        3
+    ];
+
+    /// Namespaced
+    set Namespaced = [ a, b, c ];
+
+    Namespaced.a;       // Valid
+    // Namespaced.d     // Error: Field `d` is not defined!
+}
+/// Indexing
+{
+    set Array = [ 1, 2, 3, 4, 5 ];
+
+    // Slicing
+    set Slice = Array[1, 2, 3];         // [ 2, 3, 4]
+
+    // Length
+    set dot_length = Array.len;
+    set str_length = Array[`len`];
+    set num_length = Array[-1]; 
+
+    // How Tables are stored in memory:    
+    //      -1    0  1  2  3  4 
+    // len = 5, [ 1, 2, 3, 4, 5 ]
+
+    // Ranges
+    set Range = Array[1 ~ 3];          // [ 2, 3, 4 ]
+    set Start = Array[  ~ 2];          // [ 1, 2, 3 ]
+    set End   = Array[2 ~  ];          // [ 3, 4, 5 ]
+    set All   = Array[  ~  ];          // [ 1, 2, 3, 4, 5 ]
+
+    // Non-inclusive Ranges
+    set NonInclusiveRange = Array[1|~|3];  // [ 2 ]
+    set NonInclusiveStart = Array[ ~| 2];  // [ 1, 2]
+    set NonInclusiveEnd   = Array[2 |~ ];  // [ 4, 5 ]
+    set NonInclusiveAll   = Array[ |~| ];  // [ 2, 3, 4 ]
+
+    // Reverse
+    set Reverse = Array[4 ~ 0];         // [ 5, 4, 3, 2, 1 ]
+
+    // Destructuring
+    set [ a, b, c ] = Array[1~3];       // a = 2, b = 3, c = 4
+
+    // Mixing Indexing
+    set Mixed_Array = Array[0,1~3,0];   // [ 1, 2, 3, 4, 1 ]
+
+    // Named fields
+    set Table = [
+        field_1 = 1,
+        field_2 = 2,
+        field_3 = 3,
+        field_4 = 4,
+        field_5 = 5
+    ];
+
+    set [ d, e, f ] = Table[`field_3` ~ `field_5`]; // d = 3, e = 4, f = 5
+}
+/// Dynamic Tables
+{
+    set _Dynamic = [ 1, 2, 3 ];
+
+    // Removing fields
+    del _Dynamic[1];                // [ 1, 3 ]
+    del _Dynamic[1];                // [ 1 ]
+
+    // Adding fields
+    set _Dynamic[1] = 2;            // [ 1, 2 ]
+    set _Dynamic.a  = 3;            // [ 1, 2, a = 3 ]
+    set _Dynamic[_Dynamic[-1]] = 4; // [ 1, 2, a = 3, 4 ]
+    set _Dynamic[5~7] = 5;          // [ 1, 2, a = 3, 4, 5, 5, 5 ]
+
+    // Concatenating fields
+    del _Dynamic[1~];               // [ 1, 2 ]
+    _Dynamic = _Dynamic ~ [ 3, 4 ]; // [ 1, 2, 3, 4 ]
+    _Dynamic ~= [ 5, 6 ];           // [ 1, 2, 3, 4, 5, 6 ]
+    del _Dynamic[0, 1, 4~];         // [ 3, 4 ]
+    _Dynamic = [ 1, 2 ] ~ _Dynamic; // [ 1, 2, 3, 4 ]
+}
+/// Typing Complex Types
+{
+    set Manual_Table = [
+        constant: #uint = 1,
+        _mutable: #sint = 2
+    ];
+    set Table: #[
+        constant: #uint,
+        _mutable: #sint
+    ];
+    set Typed_Table: #Table = [
+        constant = 1,
+        _mutable = 2
+    ];
+
+    set Inferred_Table = [ 1, 2 ];
+    set is_1 = Inferred_Table.constant; 
+
+    // Initializing large Tables
+    set Tedious_Array: #[ #uint, #uint, #uint ] = [ 0, 0, 0 ];
+    set Easier_Array:  #[0~2: #uint] = 0;
+    set Big_Array: #[ 0~100: #uint ] = 0;
+
+    // Simple Enums using or `|` instead of and `,`
+    set #Direction: #[ Left | Right | Up | Down ];
+
+    set Explict_Heading: #Direction = [ Up ];
+    set Implied_Heading: #Direction = Left;
+
+    // Valued Enums
+    set #Number: #[
+        one:   #uint = 1 |
+        two:   #uint = 2 |
+        three: #uint = 3
+    ];
+
+    set Enum_Number: #Number = two;
+
+    set _is_2 = Enum_Number.two;
+    _is_2     = Enum_Number[0];  // This works as well
+    // set is_3 = Enum_Number.three; // Error: Field `three` is not defined!
+
+    // Generics
+    set #Generic_Wrapper( type ) = [
+        value: type
+    ];
+    set Uint_Holder: #Generic_Wrapper( #uint ) = [
+        value = 1
+    ];
+
+    // Optionals
+    set #Optional( type ) = [
+        value: type |
+        none
+    ];
+    set Optional_Uint: #Optional( #uint ) = [
+        value = 1
+    ];
+    set Optional_None: #Optional( #uint ) = none;
+}
